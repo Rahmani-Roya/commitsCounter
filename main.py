@@ -5,28 +5,45 @@ import jmespath
 def get_github(path: str):
     url = "https://api.github.com"
     token = "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"
-    return requests.get(url+ path, headers={'Authorization': "Bearer " + token})
-# def commits_counter(commit_obj: object)-> int:
+    # try:
+    response = requests.get(url+ path, headers={'Authorization': "Bearer " + token})
+    response.raise_for_status()   
+    # except requests.exceptions.HTTPError as err:
+    #     print("Http Error", err)
+    return response
+
+def read_commits(user_name, repo_name, page_number, items_per_page):
+    return get_github(f"/repos/{user_name}/{repo_name}/commits?page={page_number}&per_page={items_per_page}")
 
 
 
-user_name = "/prodehghan"
-repos_path =  "/repos"
-commits_path = "/commits?per_page=100"
-user = get_github(f"/users{user_name}")
-print(user.status_code)
-repos = get_github(f"/users{user_name}{repos_path}")
-print(repos.status_code)
+def count_commits(user_name, repo_name: str)-> int:
+
+    page_number = 1
+    total_commits = 0
+    while(True):
+        page = read_commits(user_name, repo_name, page_number, 100)
+        page_obj = page.json()
+        page_commits = len(page_obj)
+        total_commits += page_commits
+        if(page_commits<100):
+            break 
+        page_number += 1
+    return total_commits
+        
+
+user_name = "prodehghan"
+repos_path =  "repos"
+
+user = get_github(f"/users/{user_name}")
 user_obj = user.json()
-repos_obj = repos.json()
-
-
-for i in range (0,user_obj["public_repos"]) :
-    repos_name = repos_obj[i]["name"]
-    commits = get_github(f"{repos_path}{user_name}/{repos_name}{commits_path}")
-    commits_obj = commits.json()
-    print(repos_name +":"+str(len(commits_obj)))
-    print("\n")
-
+repo = get_github(f"/users/{user_name}/{repos_path}")
+repo_obj = repo.json()
+total_repos = user_obj["public_repos"]
+for i in range (0,total_repos) :
+    repo_name = repo_obj[i]["name"]
+    commit_counter = count_commits(user_name,repo_name)
+    print(repo_name +":"+str(commit_counter))
+print(read_commits("prodehghan","oh-my-posh",0,5))
 
 # "commits_url": "https://api.github.com/repos/prodehghan/PerformanceMonitor.WinForms/commits{/sha}",
