@@ -1,21 +1,15 @@
 import requests
 import json
-import jmespath
 
 def get_github(path: str):
     url = "https://api.github.com"
     token = "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"
-    # try:
     response = requests.get(url+ path, headers={'Authorization': "Bearer " + token})
     response.raise_for_status()   
-    # except requests.exceptions.HTTPError as err:
-    #     print("Http Error", err)
     return response
 
 def read_commits(user_name, repo_name, page_number, items_per_page):
     return get_github(f"/repos/{user_name}/{repo_name}/commits?page={page_number}&per_page={items_per_page}")
-
-
 
 def count_commits(user_name, repo_name: str)-> int:
 
@@ -34,16 +28,15 @@ def count_commits(user_name, repo_name: str)-> int:
 
 user_name = "prodehghan"
 repos_path =  "repos"
-
-user = get_github(f"/users/{user_name}")
-user_obj = user.json()
-repo = get_github(f"/users/{user_name}/{repos_path}")
-repo_obj = repo.json()
-total_repos = user_obj["public_repos"]
-for i in range (0,total_repos) :
-    repo_name = repo_obj[i]["name"]
-    commit_counter = count_commits(user_name,repo_name)
-    print(repo_name +":"+str(commit_counter))
-print(read_commits("prodehghan","oh-my-posh",0,5))
-
-# "commits_url": "https://api.github.com/repos/prodehghan/PerformanceMonitor.WinForms/commits{/sha}",
+try:
+    user = get_github(f"/users/{user_name}")
+    user_obj = user.json()
+    repo = get_github(f"/users/{user_name}/{repos_path}")
+    repo_obj = repo.json()
+    total_repos = user_obj["public_repos"]
+    for i in range (0,total_repos) :
+        repo_name = repo_obj[i]["name"]
+        commit_counter = count_commits(user_name,repo_name)
+        print(repo_name +":"+str(commit_counter))
+except requests.exceptions.HTTPError as err:
+    print("Http Error", err)
