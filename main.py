@@ -3,7 +3,7 @@ import json
 
 def get_github(path: str):
     url = "https://api.github.com"
-    token = "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"
+    token = "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"
     response = requests.get(url+ path, headers={'Authorization': "Bearer " + token})
     response.raise_for_status()   
     return response
