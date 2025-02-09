@@ -4,13 +4,16 @@ import json
 
 def get_github(path: str):
     url = "https://api.github.com"
-    token = "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"
+    token = "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"
     response = requests.get(url+ path, headers={'Authorization': "Bearer " + token})
     response.raise_for_status()   
     return response
 
 def read_commits(user_name, repo_name, page_number, items_per_page):
     return get_github(f"/repos/{user_name}/{repo_name}/commits?page={page_number}&per_page={items_per_page}")
+
+# def read_repos(user_name, page_number, items_per_page):
+#     return get_github(f"/users/{user_name}/repos?page={page_number}&per_page={items_per_page}")
 
 def count_commits(user_name, repo_name: str)-> int:
     page_number = 1
@@ -24,6 +27,7 @@ def count_commits(user_name, repo_name: str)-> int:
             break 
         page_number += 1
     return total_commits
+
    
 
 try:
@@ -32,9 +36,10 @@ try:
     repos_path =  "repos"
     user = get_github(f"/users/{user_name}")
     user_obj = user.json()
-    repo = get_github(f"/users/{user_name}/{repos_path}")
-    repo_obj = repo.json()
     total_repos = user_obj["public_repos"]
+    repo = get_github(f"/users/{user_name}/repos?page=1&per_page=100")
+    repo_obj = repo.json()
+    
     for i in range (total_repos) :
         repo_name = repo_obj[i]["name"]
         commit_counter = count_commits(user_name,repo_name)
